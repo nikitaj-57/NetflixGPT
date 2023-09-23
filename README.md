@@ -2,6 +2,9 @@
 
 - Create React App
 - Configured Tailwind
+- Setup Routes using react-router-dom
+- Header
+- Login Form
 
 # Features
 
