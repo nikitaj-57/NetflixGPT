@@ -1,8 +1,72 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Header from "./Header";
+import { checkValidData } from "../utils/validate";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { auth } from "../utils/firebase";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
+  const [errorMessage, setErrorMessage] = useState(null);
+
+  const email = useRef(null);
+  const password = useRef(null);
+  //   const name = useRef(null);
+
+  function handleButtonClick() {
+    // validate the form data
+    const result = checkValidData(
+      //   name.current.value,
+      email.current.value,
+      password.current.value
+    );
+    setErrorMessage(result);
+
+    // Sign in/ Sign up
+    if (result) return;
+
+    if (!isSignInForm) {
+      // sign up
+      createUserWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log(user);
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMessage(errorCode + "-" + errorMessage);
+          // ..
+        });
+    } else {
+      // sign in
+      signInWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log(user);
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMessage(errorCode + "-" + errorMessage);
+        });
+    }
+  }
+
   function handleSignInToggle() {
     setIsSignInForm(!isSignInForm);
   }
@@ -15,7 +79,10 @@ const Login = () => {
           alt="background"
         />
       </div>
-      <form className="w-3/12 p-12 absolute my-36 mx-auto right-0 left-0 bg-black bg-opacity-90 rounded-lg">
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        className="w-3/12 p-12 absolute my-36 mx-auto right-0 left-0 bg-black bg-opacity-90 rounded-lg"
+      >
         <h1 className="font-bold text-3xl text-white py-4">
           {isSignInForm ? "Sign In" : "Sign Up"}
         </h1>
@@ -24,29 +91,47 @@ const Login = () => {
             type="text"
             placeholder="Full Name"
             className="w-full p-4 my-4 bg-zinc-700 text-white"
+            // ref={name}
           />
         )}
         <input
           type="text"
           placeholder="Email or phone number"
           className="w-full p-4 my-4 bg-zinc-700 text-white"
+          ref={email}
         />
         <input
           type="password"
           placeholder="Password"
           className="w-full p-4 my-4 bg-zinc-700 text-white"
+          ref={password}
+          autoComplete="false"
         />
-        <button className="bg-red-600 text-white w-full p-4 my-6 rounded-md">
+        {errorMessage && <p className="text-red-600">{errorMessage}</p>}
+        <button
+          className="bg-red-600 text-white w-full p-4 my-6 rounded-md"
+          onClick={handleButtonClick}
+        >
           {isSignInForm ? "Sign In" : "Sign Up"}
         </button>
 
-        <p className="text-white">
-          New to Netflix?
-          <span className="cursor-pointer" onClick={handleSignInToggle}>
-            {" "}
-            Sign up now.
-          </span>
-        </p>
+        {!isSignInForm ? (
+          <p className="text-white">
+            Already registered?
+            <span className="cursor-pointer" onClick={handleSignInToggle}>
+              {" "}
+              Sign In now.
+            </span>
+          </p>
+        ) : (
+          <p className="text-white">
+            New to Netflix?
+            <span className="cursor-pointer" onClick={handleSignInToggle}>
+              {" "}
+              Sign up now.
+            </span>
+          </p>
+        )}
       </form>
     </div>
   );
