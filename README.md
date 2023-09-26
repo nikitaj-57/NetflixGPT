@@ -5,6 +5,12 @@
 - Setup Routes using react-router-dom
 - Header
 - Login Form
+- Sign Up Form
+- Form Validation
+- useRef Hook
+- Firebase Setup
+- Deploying our App to production
+- Create Sign Up user Account
 
 # Features
 
