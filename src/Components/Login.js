@@ -4,24 +4,26 @@ import { checkValidData } from "../utils/validate";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updateProfile,
 } from "firebase/auth";
 import { auth } from "../utils/firebase";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addUser } from "../utils/userSlice";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
 
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const email = useRef(null);
   const password = useRef(null);
-  //   const name = useRef(null);
+  const name = useRef(null);
 
   function handleButtonClick() {
-    // validate the form data
-    const result = checkValidData(
-      //   name.current.value,
-      email.current.value,
-      password.current.value
-    );
+    const result = checkValidData(email.current.value, password.current.value);
     setErrorMessage(result);
 
     // Sign in/ Sign up
@@ -37,7 +39,30 @@ const Login = () => {
         .then((userCredential) => {
           // Signed in
           const user = userCredential.user;
+          updateProfile(auth.currentUser, {
+            displayName: name.current.value,
+            photoURL:
+              "https://occ-0-6245-2186.1.nflxso.net/dnm/api/v6/K6hjPJd6cR6FpVELC5Pd6ovHRSk/AAAABdYJV5wt63AcxNaDoqDXUhqZb55oN5Dxt1m-Zdn_z5rn_hIq9m8dA8JB2xdcPmrY3yXnlVWYKPXnOrbv2QN4aEVU28dESJg.png?r=1d4",
+          })
+            .then(() => {
+              const { uid, email, displayName, photoURL } = auth.currentUser;
+              // connect to redux
+              dispatch(
+                addUser({
+                  uid: uid,
+                  email: email,
+                  displayName: displayName,
+                  photoURL: photoURL,
+                })
+              );
+
+              navigate("/browse");
+            })
+            .catch((error) => {
+              setErrorMessage(error.message);
+            });
           console.log(user);
+
           // ...
         })
         .catch((error) => {
@@ -57,6 +82,7 @@ const Login = () => {
           // Signed in
           const user = userCredential.user;
           console.log(user);
+          navigate("/browse");
           // ...
         })
         .catch((error) => {
@@ -91,7 +117,7 @@ const Login = () => {
             type="text"
             placeholder="Full Name"
             className="w-full p-4 my-4 bg-zinc-700 text-white"
-            // ref={name}
+            ref={name}
           />
         )}
         <input
